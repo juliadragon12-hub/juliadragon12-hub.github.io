@@ -21,10 +21,10 @@
     }
   ],
   "colors": {
-    "background": "#17130f",
-    "card": "#221b14",
-    "text": "#f5efe6",
-    "accent": "#c9a36a",
-    "muted": "#b8a88f"
+    "background": "#0A0A0A",
+    "card": "#161616",
+    "text": "#FFFFFF",
+    "accent": "#FFFFFF",
+    "muted": "#9E9E9E"
   }
 }
