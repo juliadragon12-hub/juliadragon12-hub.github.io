@@ -108,7 +108,9 @@
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
   }
-  fetch('config.json', { cache: 'no-store' })
+  var cfgFile = new URLSearchParams(location.search).get('p') === 'career'
+    ? 'config-career.json' : 'config.json';
+  fetch(cfgFile, { cache: 'no-store' })
     .then(function (r) { return r.json(); })
     .then(apply)
     .catch(function () { document.getElementById('tagline').textContent = 'Card is loading — please refresh.'; });
