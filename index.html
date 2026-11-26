@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Julia Drake — Julia Drake Photography</title>
+<meta name="description" content="Digital business card for Julia Drake, Julia Drake Photography.">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: var(--bg, #17130f);
+    color: var(--text, #f5efe6);
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px;
+  }
+  .card {
+    background: var(--card, #221b14);
+    border: 1px solid var(--accent, #c9a36a);
+    border-radius: 18px;
+    max-width: 420px; width: 100%;
+    padding: 36px 28px 28px;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(0,0,0,.45);
+  }
+  .monogram {
+    width: 76px; height: 76px; margin: 0 auto 16px;
+    border: 2px solid var(--accent, #c9a36a); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; letter-spacing: 2px; color: var(--accent, #c9a36a);
+  }
+  h1 { font-size: 30px; font-weight: normal; letter-spacing: .5px; }
+  .title { color: var(--accent, #c9a36a); font-size: 17px; margin-top: 6px; letter-spacing: 1px; text-transform: uppercase; }
+  .tagline { color: var(--muted, #b8a88f); font-size: 15px; margin-top: 10px; font-style: italic; }
+  .links { margin-top: 26px; display: flex; flex-direction: column; gap: 12px; }
+  a.btn, button.btn {
+    display: block; width: 100%;
+    padding: 14px 16px; border-radius: 10px;
+    border: 1px solid var(--accent, #c9a36a);
+    color: var(--text, #f5efe6); background: transparent;
+    text-decoration: none; font-size: 16px; font-family: inherit;
+    cursor: pointer; transition: background .15s ease;
+  }
+  a.btn:hover, button.btn:hover { background: rgba(201,163,106,.15); }
+  .btn.primary { background: var(--accent, #c9a36a); color: #17130f; font-weight: bold; }
+  .btn.primary:hover { background: var(--accent, #c9a36a); opacity: .9; }
+  .foot { margin-top: 22px; font-size: 13px; color: var(--muted, #b8a88f); }
+  .foot a { color: var(--muted, #b8a88f); }
+</style>
+</head>
+<body>
+  <main class="card" id="card">
+    <div class="monogram" id="monogram">JD</div>
+    <h1 id="name">Julia Drake</h1>
+    <div class="title" id="title">Julia Drake Photography</div>
+    <div class="tagline" id="tagline"></div>
+    <div class="links" id="links"></div>
+    <div class="foot"><a href="edit.html">Card owner? Edit this card</a></div>
+  </main>
+<script>
+(function () {
+  function initials(name) {
+    return name.split(/\s+/).map(function (w) { return w.charAt(0); }).slice(0, 2).join('').toUpperCase();
+  }
+  function apply(cfg) {
+    var c = cfg.colors || {};
+    var root = document.documentElement.style;
+    if (c.background) root.setProperty('--bg', c.background);
+    if (c.card) root.setProperty('--card', c.card);
+    if (c.text) root.setProperty('--text', c.text);
+    if (c.accent) root.setProperty('--accent', c.accent);
+    if (c.muted) root.setProperty('--muted', c.muted);
+    document.getElementById('name').textContent = cfg.name || '';
+    document.getElementById('title').textContent = cfg.title || '';
+    document.getElementById('tagline').textContent = cfg.tagline || '';
+    document.getElementById('monogram').textContent = initials(cfg.name || 'J D');
+    document.title = (cfg.name || '') + ' — ' + (cfg.title || '');
+    var box = document.getElementById('links');
+    box.innerHTML = '';
+    (cfg.links || []).forEach(function (l) {
+      if (l.visible === false || !l.url) return;
+      var a = document.createElement('a');
+      a.className = 'btn'; a.href = l.url; a.textContent = l.label || l.url;
+      if (/^https?:/.test(l.url)) { a.target = '_blank'; a.rel = 'noopener'; }
+      box.appendChild(a);
+    });
+    if (cfg.showResume && cfg.resumeUrl) {
+      var r = document.createElement('a');
+      r.className = 'btn'; r.href = cfg.resumeUrl; r.textContent = cfg.resumeLabel || 'My Resume (PDF)';
+      r.target = '_blank'; r.rel = 'noopener';
+      box.appendChild(r);
+    }
+    var save = document.createElement('button');
+    save.className = 'btn primary'; save.textContent = 'Save Contact';
+    save.addEventListener('click', function () { downloadVCard(cfg); });
+    box.appendChild(save);
+  }
+  function downloadVCard(cfg) {
+    var lines = ['BEGIN:VCARD', 'VERSION:3.0',
+      'FN:' + (cfg.name || ''), 'N:Drake;Julia;;;',
+      'ORG:' + (cfg.title || ''), 'TITLE:' + (cfg.title || '')];
+    if (cfg.email) lines.push('EMAIL;TYPE=WORK:' + cfg.email);
+    (cfg.links || []).forEach(function (l) { if (/^https?:/.test(l.url || '')) lines.push('URL:' + l.url); });
+    lines.push('END:VCARD');
+    var blob = new Blob([lines.join('\r\n')], { type: 'text/vcard' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'JuliaDrake.vcf';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+  }
+  fetch('config.json', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(apply)
+    .catch(function () { document.getElementById('tagline').textContent = 'Card is loading — please refresh.'; });
+})();
+</script>
+</body>
+</html>

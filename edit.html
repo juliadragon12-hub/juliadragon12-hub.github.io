@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edit — Julia Drake's Card</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; background:#17130f; color:#f5efe6; margin:0; padding:20px 14px 60px; }
+  main { max-width: 560px; margin: 0 auto; }
+  h1 { font-size: 22px; } h2 { font-size: 17px; margin-top: 28px; color:#c9a36a; }
+  label { display:block; font-size: 13px; color:#b8a88f; margin: 12px 0 4px; }
+  input[type=text], input[type=url], input[type=email] { width:100%; padding:10px; border-radius:8px; border:1px solid #4a3d2c; background:#221b14; color:#f5efe6; font-size:15px; }
+  input[type=color] { width: 64px; height: 38px; border: none; background: none; padding: 0; }
+  .row { display:flex; gap:10px; align-items:center; }
+  .row > * { flex: 1; }
+  .linkrow { border:1px solid #4a3d2c; border-radius:10px; padding:10px; margin-top:10px; background:#1e1811; }
+  .linkrow .row { margin-top:6px; }
+  button { padding:10px 14px; border-radius:8px; border:1px solid #c9a36a; background:transparent; color:#f5efe6; font-size:14px; cursor:pointer; }
+  button.primary { background:#c9a36a; color:#17130f; font-weight:bold; }
+  button.small { padding:6px 10px; font-size:13px; }
+  .preset { display:flex; gap:10px; margin-top:10px; }
+  .note { font-size:13px; color:#b8a88f; line-height:1.5; }
+  .warn { border:1px solid #a33; background:rgba(160,40,40,.12); border-radius:10px; padding:10px 12px; font-size:13px; line-height:1.5; margin-top:12px; }
+  #status { margin-top:14px; font-size:14px; min-height:20px; }
+  .switch { display:flex; align-items:center; gap:10px; margin-top:14px; font-size:15px; color:#f5efe6; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Edit your card</h1>
+  <p class="note">Changes here change what people see when they tap your phone — no app update needed. The card's web address never changes. <a href="index.html" style="color:#c9a36a">View the live card</a>.</p>
+
+  <h2>Quick presets</h2>
+  <div class="preset">
+    <button id="presetPhoto" class="primary">Photography mode</button>
+    <button id="presetCareer" class="primary">Career Fair mode</button>
+  </div>
+  <p class="note">Photography: portfolio + Instagram + email, resume hidden. Career Fair: LinkedIn shown and the Resume button on.</p>
+
+  <h2>About you</h2>
+  <label>Name</label><input type="text" id="name">
+  <label>Title / business</label><input type="text" id="title">
+  <label>Tagline</label><input type="text" id="tagline">
+  <label>Email (used by Save Contact)</label><input type="email" id="email">
+
+  <h2>Buttons (top to bottom = order on the card)</h2>
+  <div id="links"></div>
+  <button id="addLink" class="small" style="margin-top:10px">+ Add a button</button>
+
+  <h2>Resume</h2>
+  <div class="switch"><input type="checkbox" id="showResume" style="width:20px;height:20px"> <span>Show the Resume button on my card</span></div>
+  <label>Resume button text</label><input type="text" id="resumeLabel">
+  <div class="warn"><strong>Privacy note:</strong> the resume file itself lives at a public web address (…/resume.pdf) so the button can work at all — hiding the button hides it from the card, but anyone who knows or guesses that direct address can still open it. If you want it fully offline outside career-fair season, ask Luc to remove the file from the site; the button setting alone can't do that.</div>
+
+  <h2>Colors</h2>
+  <div class="row">
+    <div><label>Background</label><input type="color" id="cBackground"></div>
+    <div><label>Card</label><input type="color" id="cCard"></div>
+    <div><label>Text</label><input type="color" id="cText"></div>
+    <div><label>Accent</label><input type="color" id="cAccent"></div>
+    <div><label>Muted</label><input type="color" id="cMuted"></div>
+  </div>
+
+  <h2>Save</h2>
+  <p class="note">Option A — just tell Luc in the Muse app what to change and he'll publish it. Option B — save it yourself: paste a GitHub fine-grained personal access token with Contents read/write on the <em>juliadragon12-hub.github.io</em> repository. The token is kept only in this browser on this device and is sent only to GitHub.</p>
+  <label>GitHub token (optional, for self-save)</label>
+  <input type="text" id="token" autocomplete="off" placeholder="github_pat_…">
+  <div class="preset">
+    <button id="saveGithub" class="primary">Save to GitHub</button>
+    <button id="downloadCfg">Download config.json</button>
+  </div>
+  <div id="status"></div>
+</main>
+<script>
+var REPO = 'juliadragon12-hub/juliadragon12-hub.github.io';
+var cfg = null;
+function $(id) { return document.getElementById(id); }
+function status(msg) { $('status').textContent = msg; }
+
+function renderLinks() {
+  var box = $('links'); box.innerHTML = '';
+  cfg.links.forEach(function (l, i) {
+    var div = document.createElement('div'); div.className = 'linkrow';
+    div.innerHTML =
+      '<div class="row"><input type="text" data-f="label" placeholder="Button text" value="">' +
+      '<input type="checkbox" data-f="visible" style="width:20px;height:20px;flex:none" title="Show on card"></div>' +
+      '<div class="row"><input type="url" data-f="url" placeholder="https://…"></div>' +
+      '<div class="row" style="margin-top:8px">' +
+      '<button class="small" data-act="up">↑ Up</button><button class="small" data-act="down">↓ Down</button>' +
+      '<button class="small" data-act="del">Delete</button></div>';
+    div.querySelector('[data-f=label]').value = l.label || '';
+    div.querySelector('[data-f=url]').value = l.url || '';
+    div.querySelector('[data-f=visible]').checked = l.visible !== false;
+    div.querySelectorAll('input').forEach(function (inp) {
+      inp.addEventListener('input', function () { collect(); });
+      inp.addEventListener('change', function () { collect(); });
+    });
+    div.querySelector('[data-act=up]').addEventListener('click', function () { if (i > 0) { cfg.links.splice(i - 1, 0, cfg.links.splice(i, 1)[0]); renderLinks(); } });
+    div.querySelector('[data-act=down]').addEventListener('click', function () { if (i < cfg.links.length - 1) { cfg.links.splice(i + 1, 0, cfg.links.splice(i, 1)[0]); renderLinks(); } });
+    div.querySelector('[data-act=del]').addEventListener('click', function () { cfg.links.splice(i, 1); renderLinks(); });
+    box.appendChild(div);
+  });
+}
+function fill() {
+  $('name').value = cfg.name || ''; $('title').value = cfg.title || '';
+  $('tagline').value = cfg.tagline || ''; $('email').value = cfg.email || '';
+  $('showResume').checked = !!cfg.showResume; $('resumeLabel').value = cfg.resumeLabel || 'My Resume (PDF)';
+  var c = cfg.colors || {};
+  $('cBackground').value = c.background || '#17130f'; $('cCard').value = c.card || '#221b14';
+  $('cText').value = c.text || '#f5efe6'; $('cAccent').value = c.accent || '#c9a36a'; $('cMuted').value = c.muted || '#b8a88f';
+  renderLinks();
+}
+function collect() {
+  cfg.name = $('name').value; cfg.title = $('title').value;
+  cfg.tagline = $('tagline').value; cfg.email = $('email').value;
+  cfg.showResume = $('showResume').checked; cfg.resumeLabel = $('resumeLabel').value;
+  cfg.resumeUrl = cfg.resumeUrl || 'resume.pdf';
+  cfg.colors = { background: $('cBackground').value, card: $('cCard').value, text: $('cText').value, accent: $('cAccent').value, muted: $('cMuted').value };
+  var rows = $('links').children;
+  for (var i = 0; i < rows.length; i++) {
+    cfg.links[i].label = rows[i].querySelector('[data-f=label]').value;
+    cfg.links[i].url = rows[i].querySelector('[data-f=url]').value;
+    cfg.links[i].visible = rows[i].querySelector('[data-f=visible]').checked;
+  }
+  return cfg;
+}
+function setVisible(id, v) { cfg.links.forEach(function (l) { if (l.id === id) l.visible = v; }); }
+$('presetPhoto').addEventListener('click', function () {
+  collect(); setVisible('portfolio', true); setVisible('instagram', true); setVisible('email', true); setVisible('linkedin', false);
+  cfg.showResume = false; fill(); status('Photography mode set — now Save it.');
+});
+$('presetCareer').addEventListener('click', function () {
+  collect(); setVisible('linkedin', true); setVisible('portfolio', true); setVisible('instagram', true); setVisible('email', true);
+  cfg.showResume = true; fill(); status('Career Fair mode set — now Save it.');
+});
+$('addLink').addEventListener('click', function () { collect(); cfg.links.push({ id: 'link' + Date.now(), label: '', url: '', visible: true }); renderLinks(); });
+['name','title','tagline','email','resumeLabel'].forEach(function (id) { $(id).addEventListener('input', collect); });
+$('showResume').addEventListener('change', collect);
+['cBackground','cCard','cText','cAccent','cMuted'].forEach(function (id) { $(id).addEventListener('input', collect); });
+
+$('downloadCfg').addEventListener('click', function () {
+  collect();
+  var blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'config.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  status('Downloaded. Send it to Luc, or replace config.json in the GitHub repo with it.');
+});
+$('token').value = localStorage.getItem('ghToken') || '';
+$('token').addEventListener('change', function () { localStorage.setItem('ghToken', $('token').value.trim()); });
+$('saveGithub').addEventListener('click', function () {
+  collect();
+  var token = $('token').value.trim();
+  if (!token) { status('Paste a GitHub token first — or use Download and send the file to Luc.'); return; }
+  localStorage.setItem('ghToken', token);
+  var headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' };
+  status('Contacting GitHub…');
+  fetch('https://api.github.com/repos/' + REPO + '/contents/config.json', { headers: headers })
+    .then(function (r) { return r.json(); })
+    .then(function (cur) {
+      var body = { message: 'Update card config from editor', content: btoa(unescape(encodeURIComponent(JSON.stringify(cfg, null, 2)))), sha: cur.sha };
+      return fetch('https://api.github.com/repos/' + REPO + '/contents/config.json', { method: 'PUT', headers: headers, body: JSON.stringify(body) });
+    })
+    .then(function (r) { if (!r.ok) throw new Error('GitHub said ' + r.status); status('Saved! The live card updates in about a minute.'); })
+    .catch(function (e) { status('Save failed: ' + e.message + ' — check the token has Contents read/write on this repo.'); });
+});
+
+fetch('config.json', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) { cfg = j; fill(); })
+  .catch(function () { status('Could not load the current config.'); });
+</script>
+</body>
+</html>
