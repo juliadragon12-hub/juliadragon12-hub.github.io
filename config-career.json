@@ -1,25 +1,12 @@
 {
-  "colors": {
-    "accent": "#c9a36a",
-    "background": "#17130f",
-    "card": "#221b14",
-    "muted": "#b8a88f",
-    "text": "#f5efe6"
-  },
+  "name": "Julia Drake",
+  "title": "BS International Business ",
+  "tagline": "Graduation May 2027",
   "email": "julia.r.drake@gmail.com",
+  "showResume": true,
+  "resumeLabel": "My Resume (PDF)",
+  "resumeUrl": "resume.pdf",
   "links": [
-    {
-      "id": "portfolio",
-      "label": "View My Portfolio",
-      "url": "https://juliadrakephotography.myportfolio.com",
-      "visible": true
-    },
-    {
-      "id": "instagram",
-      "label": "Instagram — @j_drake_photography",
-      "url": "https://instagram.com/j_drake_photography",
-      "visible": true
-    },
     {
       "id": "email",
       "label": "Email Me",
@@ -29,14 +16,15 @@
     {
       "id": "linkedin",
       "label": "LinkedIn",
-      "url": "https://www.linkedin.com/in/julia-drake-5a1b39326/",
+      "url": "https:\/\/www.linkedin.com\/in\/julia-drake-5a1b39326\/",
       "visible": true
     }
   ],
-  "name": "Julia Drake",
-  "resumeLabel": "My Resume (PDF)",
-  "resumeUrl": "resume.pdf",
-  "showResume": true,
-  "tagline": "Portraits & Fine Art",
-  "title": "Julia Drake Photography"
+  "colors": {
+    "background": "#17130f",
+    "card": "#221b14",
+    "text": "#f5efe6",
+    "accent": "#c9a36a",
+    "muted": "#b8a88f"
+  }
 }
